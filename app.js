@@ -1,10 +1,7 @@
 const { createApp } = Vue;
 
-const BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5072'
-    : 'https://drmusic-backend.azurewebsites.net';
-const API = `${BASE}/api/Music`;
-const AUTH = `${BASE}/api/Auth/login`;
+const API = 'http://localhost:5072/api/Music';
+const AUTH = 'http://localhost:5072/api/Auth/login';
 
 createApp({
     data() {
