@@ -8,76 +8,100 @@
 </head>
 <body>
     <div id="app" class="container mt-4">
-        <h1>DR Music Records</h1>
 
-        <!-- Statusbesked -->
-        <div v-if="message" :class="'alert alert-' + messageType + ' alert-dismissible'" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" @click="message = null"></button>
-        </div>
-
-        <!-- Søgefelt -->
-        <div class="row mb-3">
-            <div class="col">
-                <input type="text" class="form-control" v-model="searchTitle" placeholder="Søg efter titel..." @input="fetchRecords">
-            </div>
-            <div class="col">
-                <input type="text" class="form-control" v-model="searchArtist" placeholder="Søg efter artist..." @input="fetchRecords">
-            </div>
-        </div>
-
-        <!-- Tilføj record -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5>Tilføj ny record</h5>
-                <div class="row g-2">
-                    <div class="col"><input type="text" class="form-control" v-model="newRecord.title" placeholder="Titel"></div>
-                    <div class="col"><input type="text" class="form-control" v-model="newRecord.artist" placeholder="Artist"></div>
-                    <div class="col"><input type="number" class="form-control" v-model="newRecord.duration" placeholder="Varighed (sek)"></div>
-                    <div class="col"><input type="number" class="form-control" v-model="newRecord.publicationDate" placeholder="År"></div>
-                    <div class="col-auto"><button class="btn btn-primary" @click="addRecord">Tilføj</button></div>
+        <!-- Login -->
+        <div v-if="!token">
+            <h1>DR Music - Login</h1>
+            <div class="card" style="max-width: 400px;">
+                <div class="card-body">
+                    <div v-if="loginError" class="alert alert-danger">{{ loginError }}</div>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" v-model="loginUsername" placeholder="Brugernavn">
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" class="form-control" v-model="loginPassword" placeholder="Adgangskode">
+                    </div>
+                    <button class="btn btn-primary w-100" @click="login">Log ind</button>
                 </div>
             </div>
         </div>
 
-        <!-- Tabel -->
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Titel</th>
-                    <th>Artist</th>
-                    <th>Varighed (sek)</th>
-                    <th>År</th>
-                    <th>Handlinger</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="record in records" :key="record.id">
-                    <td>
-                        <span v-if="editingId !== record.id">{{ record.title }}</span>
-                        <input v-else type="text" class="form-control" v-model="editRecord.title">
-                    </td>
-                    <td>
-                        <span v-if="editingId !== record.id">{{ record.artist }}</span>
-                        <input v-else type="text" class="form-control" v-model="editRecord.artist">
-                    </td>
-                    <td>
-                        <span v-if="editingId !== record.id">{{ record.duration }}</span>
-                        <input v-else type="number" class="form-control" v-model="editRecord.duration">
-                    </td>
-                    <td>
-                        <span v-if="editingId !== record.id">{{ record.publicationDate }}</span>
-                        <input v-else type="number" class="form-control" v-model="editRecord.publicationDate">
-                    </td>
-                    <td>
-                        <button v-if="editingId !== record.id" class="btn btn-sm btn-warning me-1" @click="startEdit(record)">Rediger</button>
-                        <button v-if="editingId === record.id" class="btn btn-sm btn-success me-1" @click="saveEdit(record.id)">Gem</button>
-                        <button v-if="editingId === record.id" class="btn btn-sm btn-secondary me-1" @click="editingId = null">Annuller</button>
-                        <button class="btn btn-sm btn-danger" @click="deleteRecord(record.id)">Slet</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <!-- Hovedapp -->
+        <div v-if="token">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>DR Music Records</h1>
+                <button class="btn btn-outline-secondary" @click="logout">Log ud</button>
+            </div>
+
+            <!-- Statusbesked -->
+            <div v-if="message" :class="'alert alert-' + messageType + ' alert-dismissible'" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" @click="message = null"></button>
+            </div>
+
+            <!-- Søgefelt -->
+            <div class="row mb-3">
+                <div class="col">
+                    <input type="text" class="form-control" v-model="searchTitle" placeholder="Søg efter titel..." @input="fetchRecords">
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" v-model="searchArtist" placeholder="Søg efter artist..." @input="fetchRecords">
+                </div>
+            </div>
+
+            <!-- Tilføj record -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Tilføj ny record</h5>
+                    <div class="row g-2">
+                        <div class="col"><input type="text" class="form-control" v-model="newRecord.title" placeholder="Titel"></div>
+                        <div class="col"><input type="text" class="form-control" v-model="newRecord.artist" placeholder="Artist"></div>
+                        <div class="col"><input type="number" class="form-control" v-model="newRecord.duration" placeholder="Varighed (sek)"></div>
+                        <div class="col"><input type="number" class="form-control" v-model="newRecord.publicationDate" placeholder="År"></div>
+                        <div class="col-auto"><button class="btn btn-primary" @click="addRecord">Tilføj</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Titel</th>
+                        <th>Artist</th>
+                        <th>Varighed (sek)</th>
+                        <th>År</th>
+                        <th>Handlinger</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="record in records" :key="record.id">
+                        <td>
+                            <span v-if="editingId !== record.id">{{ record.title }}</span>
+                            <input v-else type="text" class="form-control" v-model="editRecord.title">
+                        </td>
+                        <td>
+                            <span v-if="editingId !== record.id">{{ record.artist }}</span>
+                            <input v-else type="text" class="form-control" v-model="editRecord.artist">
+                        </td>
+                        <td>
+                            <span v-if="editingId !== record.id">{{ record.duration }}</span>
+                            <input v-else type="number" class="form-control" v-model="editRecord.duration">
+                        </td>
+                        <td>
+                            <span v-if="editingId !== record.id">{{ record.publicationDate }}</span>
+                            <input v-else type="number" class="form-control" v-model="editRecord.publicationDate">
+                        </td>
+                        <td>
+                            <button v-if="editingId !== record.id" class="btn btn-sm btn-warning me-1" @click="startEdit(record)">Rediger</button>
+                            <button v-if="editingId === record.id" class="btn btn-sm btn-success me-1" @click="saveEdit(record.id)">Gem</button>
+                            <button v-if="editingId === record.id" class="btn btn-sm btn-secondary me-1" @click="editingId = null">Annuller</button>
+                            <button class="btn btn-sm btn-danger" @click="deleteRecord(record.id)">Slet</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
